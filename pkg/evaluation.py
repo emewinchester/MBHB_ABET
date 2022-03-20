@@ -1,0 +1,129 @@
+import pandas as pd
+import numpy as np
+from pkg.constants import *
+from pkg.greedy import greedy
+
+class Evaluation():
+    """
+    clase que evalua una solucion dada
+    """
+    def __init__(self):
+
+        # DATA LOADING
+        index_df    = pd.read_csv(CERCANAS_INDICES_PATH)
+        distance_df = pd.read_csv(CERCANAS_KMS_PATH)
+        deltas_df   = pd.read_csv(DELTAS_5M_PATH) 
+
+        # DATA PREPROCESSING
+        self.index_matrix    = index_df.to_numpy()
+        self.distance_matrix = distance_df.to_numpy()
+        self.deltas_matrix   = deltas_df.to_numpy()
+        self.deltas_matrix[1:,:] *= 2
+        self.movements = self.deltas_matrix[1:,:]
+
+    
+    def _get_jumps(self,station, movement, jump_sequence, bikes, capacity):
+        """
+        DESCROPCION DE LA FUNCION
+        """
+
+
+        total_stations = len(capacity)
+        jumps = np.zeros(total_stations)
+
+
+        if movement < 0: # coger bicis
+
+            for i in range(total_stations):
+                
+                bikes[station] += movement
+
+                if bikes[station] >= 0:
+                    jumps[i] = movement
+                    break
+                else:
+                    jumps[i] = movement - bikes[station]
+                    movement = bikes[station]
+                    bikes[station] = 0
+
+                    # actualizamos la estacion siguiente
+                    station = jump_sequence[i+1]
+
+        if movement > 0:
+
+            for i in range(total_stations):
+
+                bikes[station] += movement
+
+                if bikes[station] <= capacity[station]:
+                    jumps[i] = movement
+                    break
+                else:
+                    jumps[i] = capacity[station] - (bikes[station] - movement)
+                    movement -= jumps[i]
+                    bikes[station] = capacity[station]
+
+                    station = jump_sequence[i+1]
+
+        return jumps
+
+
+
+    def _get_timestamp_distance(self, bikes, capacity, current_time, index_matrix):
+
+        jump_matrix = None
+        total_stations = len(capacity)
+
+
+        for station in range(total_stations):
+
+            movement = current_time[station]
+            jump_sequence = index_matrix[station,:]
+            
+            jumps = self._get_jumps(
+                station       = station,
+                movement      = movement,
+                jump_sequence = jump_sequence,
+                bikes         = bikes,
+                capacity      = capacity
+            )
+
+
+            if jump_matrix is None:
+                jump_matrix = jumps
+            else:
+                jump_matrix = np.vstack((jump_matrix,jumps))
+
+
+        # ya tenemos la matriz 16x16
+
+        # aplicamos las ponderaciones
+        jump_matrix[jump_matrix < 0] *= WALKING_WEIGHT
+        jump_matrix[jump_matrix > 0] *= CYCLING_WEIGHT
+
+        # pasamos la matriz a valor absoluto
+        jump_matrix = np.abs(jump_matrix)
+
+        # calculamos distancias
+        return (jump_matrix * self.distance_matrix).sum()
+
+    
+
+    def evaluate(self, solution):
+
+        total_distance = 0
+        bikes = self.deltas_matrix[0,:].copy()
+
+        for row in range(self.movements.shape[0]):
+
+            # flujo en una franja de tiempo de 5 min 
+            current_time = self.movements[row,:] 
+
+            total_distance += self._get_timestamp_distance(
+                bikes        = bikes,
+                capacity     = solution,
+                current_time = current_time,
+                index_matrix = self.index_matrix
+            )
+
+        return total_distance
