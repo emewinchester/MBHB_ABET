@@ -21,7 +21,7 @@ class Evaluation():
         deltas_matrix[1:,:] *= 2
 
         # Add row of zeros to count initial state as a movement
-        zero_row = np.zeros((1, self.deltas_matrix.shape[1]))
+        zero_row = np.zeros((1, deltas_matrix.shape[1]))
         self.extended_deltas = np.vstack([zero_row, deltas_matrix.copy()])
 
         # Matrix of movements, includes the initial state as movement
