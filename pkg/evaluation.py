@@ -34,14 +34,12 @@ class Evaluation():
         DESCROPCION DE LA FUNCION
         """
 
-
-        total_stations = len(capacity)
-        jumps = np.zeros(total_stations)
+        jumps = np.zeros(TOTAL_STATIONS)
 
 
         if movement < 0: # coger bicis
 
-            for i in range(total_stations):
+            for i in range(TOTAL_STATIONS):
                 
                 bikes[station] += movement
 
@@ -59,7 +57,7 @@ class Evaluation():
 
         if movement > 0:
 
-            for i in range(total_stations):
+            for i in range(TOTAL_STATIONS):
 
                 bikes[station] += movement
 
@@ -82,10 +80,9 @@ class Evaluation():
     def _get_timestamp_distance(self, bikes, capacity, current_time, index_matrix,count_km):
 
         jump_matrix = None
-        total_stations = len(capacity)
 
 
-        for station in range(total_stations):
+        for station in range(TOTAL_STATIONS):
 
             movement = current_time[station]
             jump_sequence = index_matrix[station,:]
