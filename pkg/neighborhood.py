@@ -67,7 +67,17 @@ class Neighborhood():
 
 
     def get_neighbor_ts(self):
-        return self.get_neighbor_sa()
+        if len(self.neighbors_ts) > 0:
+
+            neighbor = self.solution.copy()
+
+            o, d = self.neighbors_ts[0]
+            self.neighbors_ts.remove((o,d))
+
+            return self._adjust_neighbor(neighbor, o, d), (o,d)
+
+        else:
+            return None
 
 
 
