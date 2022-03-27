@@ -14,6 +14,7 @@ class Neighborhood():
         self.neighbors = list(perm)
         self.neighbors_sa =  self.neighbors.copy()
         shuffle(self.neighbors_sa)
+        self.neighbors_ts = self.neighbors_sa
    
        
 
@@ -63,4 +64,11 @@ class Neighborhood():
 
         else:
             return None
+
+
+    def get_neighbor_ts(self):
+        return self.get_neighbor_sa()
+
+
+
 

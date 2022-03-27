@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from pkg.constants import *
-from pkg.greedy import greedy
+
 
 class Evaluation():
     """
