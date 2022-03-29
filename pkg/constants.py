@@ -1,3 +1,6 @@
+from itertools import permutations
+
+
 CERCANAS_INDICES_PATH = './00_datos/cercanas_indices.csv'
 CERCANAS_KMS_PATH     = './00_datos/cercanas_kms.csv'
 DELTAS_5M_PATH        = './00_datos/deltas_5m.csv'
@@ -20,5 +23,12 @@ TOTAL_STATIONS = 16
 
 RANDOM_SOL_PROB = 0.25
 GREEDY_SOL_PROB = RANDOM_SOL_PROB + 0.5
+
+PERMUTATIONS = list(permutations(range(TOTAL_STATIONS), 2))
+
+MINIMUM_LENGTH_TABU_LIST = 2
+
+
+
 
 

@@ -1,6 +1,6 @@
-from itertools import permutations
 import numpy as np
-from random import shuffle
+from random        import shuffle
+from pkg.constants import PERMUTATIONS
 
 
 class Neighborhood():
@@ -10,13 +10,10 @@ class Neighborhood():
         self.slots = slots
         
         # list of pemutations
-        perm = permutations(range(len(self.solution)), 2)
-        self.neighbors = list(perm)
-        self.neighbors_sa =  self.neighbors.copy()
-        shuffle(self.neighbors_sa)
-        self.neighbors_ts = self.neighbors_sa
-   
-       
+        perm = PERMUTATIONS
+        self.neighbors = perm.copy()
+        np.random.shuffle(self.neighbors)
+
 
 
     def _adjust_neighbor(self, neighbor, origin, destiny):
@@ -32,7 +29,6 @@ class Neighborhood():
         
         return neighbor
 
-    
 
 
     
@@ -50,34 +46,25 @@ class Neighborhood():
         else:
             return None
 
-
-
-    def get_neighbor_sa(self):
-        if len(self.neighbors_sa) > 0:
-
-            neighbor = self.solution.copy()
-
-            o, d = self.neighbors_sa[0]
-            self.neighbors_sa.remove((o,d))
-
-            return self._adjust_neighbor(neighbor, o, d)
-
-        else:
-            return None
-
-
+    
     def get_neighbor_ts(self):
-        if len(self.neighbors_ts) > 0:
+
+        if len(self.neighbors) > 0:
 
             neighbor = self.solution.copy()
 
-            o, d = self.neighbors_ts[0]
-            self.neighbors_ts.remove((o,d))
+            o, d = self.neighbors[0]
+            self.neighbors.remove((o,d))
 
-            return self._adjust_neighbor(neighbor, o, d), (o,d)
+            return self._adjust_neighbor(neighbor, o,d), (o,d)
 
         else:
             return None
+
+
+
+
+
 
 
 
