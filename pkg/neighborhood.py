@@ -20,9 +20,12 @@ class Neighborhood():
 
         # movimiento (origen,destino)
         # coge slots de origen y los añade a destino
-        if neighbor[origin] < self.slots:
-            neighbor[destiny] += (self.slots - neighbor[origin])
-            neighbor[origin]  = 0
+
+        # no puede haber 0 slots en una estacion
+
+        if neighbor[origin] - self.slots <= 1:
+            neighbor[destiny] += neighbor[origin] - 1
+            neighbor[origin]  = 1
         else:
             neighbor[destiny] += self.slots
             neighbor[origin]  -= self.slots

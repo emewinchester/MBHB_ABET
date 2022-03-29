@@ -17,4 +17,15 @@ def generate_random_solution():
     return capacity
 
 
+def update_frequency_matrix(matrix, vector, base_values):
+
+    for column in range(len(vector)):
+        value = vector[column]
+        row = len(base_values[base_values < value]) - 1
+
+        matrix[row, column] +=1
+
+    return matrix
+
+
 
