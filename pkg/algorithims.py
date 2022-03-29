@@ -1,7 +1,7 @@
 import numpy as np
 from pkg.neighborhood import Neighborhood
 from pkg.constants import *
-from pkg.utils import generate_random_solution
+from pkg.utils import generate_greedy_solution, generate_random_solution, update_frequency_matrix
 from pkg.tabu_list import *
 
 
@@ -129,15 +129,13 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
     global_solution_cost = current_solution_cost
 
 
-    # Matriz de frecuencias: inicializacion
-    # frequency = np.ones((MAX_CAPACITY+1,TOTAL_STATIONS))
-
-    # Matriz frecuencias: actualizacion
-    # frequency = update_frecuency(frequency, current_solution)
+    # Matriz de frecuencias: inicializacion y actualizacion
+    base_values = np.array(range(1,30,3))
+    frequency = np.ones( (len( base_values ), TOTAL_STATIONS) )
+    frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
     # tabu list
     tl = TabuList(tenure)
-
 
 
 
@@ -187,7 +185,7 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
 
 
             # actualizamos matriz de frecuencias
-            # frequency = update_frecuency(frequency, current_solution) 
+            frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
         
 
@@ -198,12 +196,16 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
             current_solution_cost = evaluation.evaluate(current_solution)
         
         elif n < GREEDY_SOL_PROB:
-            current_solution      = generate_random_solution()
+            current_solution      = generate_greedy_solution(frequency, base_values)
             current_solution_cost = evaluation.evaluate(current_solution)
         
         else:
             current_solution      = global_solution
             current_solution_cost = global_solution_cost
+
+
+        # actualizamos matriz de frecuencias
+        frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
         # Redimensionamos la tabu-list
         if np.random.rand() < 0.5:
