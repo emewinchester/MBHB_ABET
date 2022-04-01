@@ -199,13 +199,9 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
         if   n < RANDOM_SOL_PROB:
             current_solution      = generate_random_solution()
             current_solution_cost = evaluation.evaluate(current_solution)
-        
         elif n < GREEDY_SOL_PROB:
             current_solution      = generate_greedy_solution(frequency, base_values)
-            current_solution_cost = evaluation.evaluate(current_solution)
-            print(current_solution, current_solution.sum())
-
-        
+            current_solution_cost = evaluation.evaluate(current_solution)        
         else:
             current_solution      = global_solution
             current_solution_cost = global_solution_cost

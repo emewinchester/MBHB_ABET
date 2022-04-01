@@ -40,9 +40,6 @@ def update_frequency_matrix(matrix, vector, base_values):
 def generate_greedy_solution(matrix, base_values):
     #####  SOLUCION GREEDY #####
 
-    pd.DataFrame(matrix).to_csv('frecuencia' + str(time.time()) + '.csv', index=False)
-
-
     # vector solucion de capacidades
     solution = np.empty(matrix.shape[1])
 
