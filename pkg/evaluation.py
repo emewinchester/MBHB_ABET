@@ -5,8 +5,11 @@ from pkg.constants import *
 
 class Evaluation():
     """
-    clase que evalua una solucion dada
+    Evalation Class. Loads the data of the problem and implements the 
+    evaluation function.
     """
+
+
     def __init__(self):
 
         # DATA LOADING
@@ -17,21 +20,27 @@ class Evaluation():
         # DATA PREPROCESSING
         self.index_matrix    = index_df.to_numpy()
         self.distance_matrix = distance_df.to_numpy()
-        deltas_matrix   = deltas_df.to_numpy()
+        deltas_matrix        = deltas_df.to_numpy()
+
+        # Modification to add more movements
         deltas_matrix[1:,:] *= 2
 
         # Add row of zeros to count initial state as a movement
-        zero_row = np.zeros((1, deltas_matrix.shape[1]))
+        zero_row             = np.zeros((1, deltas_matrix.shape[1]))
         self.extended_deltas = np.vstack([zero_row, deltas_matrix.copy()])
 
         # Matrix of movements, includes the initial state as movement
         self.movements = self.extended_deltas[1:,:]
-        
+
+        # How many times the evaluation function has been called
+        self.total_calls = 0
+    
+
 
     
     def _get_jumps(self,station, movement, jump_sequence, bikes, capacity):
         """
-        DESCROPCION DE LA FUNCION
+        DESCRIPTION DEL METODO
         """
 
         jumps = np.zeros(TOTAL_STATIONS)
@@ -120,6 +129,11 @@ class Evaluation():
     
 
     def evaluate(self, solution):
+        """
+        DESCRIPTION DEL METODO
+        """
+
+        self.total_calls += 1
 
         total_distance = 0
         bikes = self.extended_deltas[0,:].copy()
@@ -142,3 +156,5 @@ class Evaluation():
             count_km = True
 
         return total_distance
+
+

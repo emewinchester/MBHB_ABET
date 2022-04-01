@@ -1,30 +1,46 @@
 from itertools import permutations
 
 
+# PATHS TO DATA
 CERCANAS_INDICES_PATH = './00_datos/cercanas_indices.csv'
 CERCANAS_KMS_PATH     = './00_datos/cercanas_kms.csv'
 DELTAS_5M_PATH        = './00_datos/deltas_5m.csv'
 
+
+# LIMITS FOR THE CAPACITY VECTOR (capacity of the solution)
 MAX_CAPACITY = 220
 MIN_CAPACITY = 205
 
-# Los km extra andando penalizan el triple
+
+# WEIGHT FOR EACH TYPE OF DISPLACEMENT 
 CYCLING_WEIGHT = 1
 WALKING_WEIGHT = 3 * CYCLING_WEIGHT
 
-BA_TOTAL_ITERATIONS  = 100
-BL_EVALLUATION_CALLS = 3000
 
+# ITERATIONS FOR RANDOM SEARCH
+RS_TOTAL_ITERATIONS  = 100
+
+
+# ITERATIONS FOR LOCAL SEARCH
+LS_EVALLUATION_CALLS = 3000
+
+
+# numero total de semillas que usaremos
 SEEDS = 5
 
+
+# TOTAL NUMBER OF STATIONS FOR THIS PROBLEM
 TOTAL_STATIONS = 16
 
-# rango de probabilidades para la reinicializacion en Tabu Search
 
+# RANGE OF PROBABILITIES FOR RESET IN TABU SEARCH
 RANDOM_SOL_PROB = 0.25
 GREEDY_SOL_PROB = RANDOM_SOL_PROB + 0.5
 
+
+
 PERMUTATIONS = list(permutations(range(TOTAL_STATIONS), 2))
+
 
 MINIMUM_LENGTH_TABU_LIST = 2
 

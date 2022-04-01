@@ -1,14 +1,15 @@
 import numpy as np
 from pkg.neighborhood import Neighborhood
 from pkg.constants import *
-from pkg.utils import generate_greedy_solution, generate_random_solution, update_frequency_matrix
+from pkg.utils import *
 from pkg.tabu_list import *
 
 
 
 def greedy(initial_state, evaluation):
 
-    solution = np.round(initial_state / initial_state.sum() * MAX_CAPACITY)
+    solution = \
+        np.int64(np.round(initial_state / initial_state.sum() * MAX_CAPACITY))
     solution_cost = evaluation.evaluate(solution)
 
     return solution, solution_cost
@@ -24,7 +25,7 @@ def random_search(evaluation):
 
     best_solution_cost = evaluation.evaluate(best_solution)
 
-    for i in range(BA_TOTAL_ITERATIONS):
+    for i in range(RS_TOTAL_ITERATIONS - 1):
         current_solution = generate_random_solution()
         current_solution_cost = evaluation.evaluate(current_solution)
 
@@ -46,7 +47,7 @@ def local_search(granularity, evaluation):
     evaluations = 0
 
 
-    while True and evaluations < BL_EVALLUATION_CALLS:
+    while True and evaluations < LS_EVALLUATION_CALLS:
 
 
         neigbhorhood = Neighborhood(
@@ -69,13 +70,13 @@ def local_search(granularity, evaluation):
             else:
                 neighbor = neigbhorhood.get_neighbor()
 
-            if evaluations > BL_EVALLUATION_CALLS:
+            if evaluations > LS_EVALLUATION_CALLS:
                 break
 
         if neighbor is None:
             break
 
-    return current_solution, current_solution_cost, evaluations
+    return current_solution, current_solution_cost
 
 
 
@@ -157,6 +158,8 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
 
             candidates_cost.sort(key= lambda x:x[2])
 
+            
+
             # se cumple criterio de aspiracion -> mejorar la global siendo tabu
             if candidates_cost[0][2] < global_solution_cost:
 
@@ -175,6 +178,8 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
 
                 # eliminamos los movimientos tabu-activos
                 candidates_clean = [c for c in candidates_cost if not c[3]]
+
+                # print(f'veces tabu: {np.array(list(map(lambda x:x[3], candidates_cost))).sum()}')
 
                 # aceptamos solucion
                 current_solution      = candidates_clean[0][0]
@@ -198,6 +203,8 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
         elif n < GREEDY_SOL_PROB:
             current_solution      = generate_greedy_solution(frequency, base_values)
             current_solution_cost = evaluation.evaluate(current_solution)
+            print(current_solution, current_solution.sum())
+
         
         else:
             current_solution      = global_solution

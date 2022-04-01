@@ -1,11 +1,11 @@
 import numpy as np
-from random        import shuffle
 from pkg.constants import PERMUTATIONS
 
 
 class Neighborhood():
 
     def __init__(self, current_solution, slots):
+        
         self.solution = current_solution.copy()
         self.slots = slots
         
@@ -23,9 +23,9 @@ class Neighborhood():
 
         # no puede haber 0 slots en una estacion
 
-        if neighbor[origin] - self.slots <= 1:
-            neighbor[destiny] += neighbor[origin] - 1
-            neighbor[origin]  = 1
+        if neighbor[origin] < self.slots:
+            neighbor[destiny] += neighbor[origin]
+            neighbor[origin]  = 0
         else:
             neighbor[destiny] += self.slots
             neighbor[origin]  -= self.slots
@@ -59,7 +59,9 @@ class Neighborhood():
             o, d = self.neighbors[0]
             self.neighbors.remove((o,d))
 
-            return self._adjust_neighbor(neighbor, o,d), (o,d)
+            n = self._adjust_neighbor(neighbor, o,d)
+
+            return n, (d,n[d])
 
         else:
             return None
