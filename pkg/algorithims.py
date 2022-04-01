@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+
 from pkg.neighborhood import Neighborhood
 from pkg.constants import *
 from pkg.utils import *
@@ -39,12 +41,17 @@ def random_search(evaluation):
 
 
 
-def local_search(granularity, evaluation):
+def local_search(granularity, evaluation, path=None):
+
+    # estructura de datos para volcar a csv
+    costs = np.array([])
 
     current_solution = generate_random_solution()
     current_solution_cost = evaluation.evaluate(current_solution)
 
     evaluations = 0
+
+
 
 
     while True and evaluations < LS_EVALLUATION_CALLS:
@@ -66,6 +73,7 @@ def local_search(granularity, evaluation):
             if neighbor_cost < current_solution_cost:
                 current_solution      = neighbor
                 current_solution_cost = neighbor_cost
+                costs = np.append(costs, current_solution_cost)
                 break
             else:
                 neighbor = neigbhorhood.get_neighbor()
@@ -75,6 +83,14 @@ def local_search(granularity, evaluation):
 
         if neighbor is None:
             break
+    
+
+    if path is not None:
+        df = pd.DataFrame({
+            'Coste': costs
+        })
+
+        df.to_excel(path)
 
     return current_solution, current_solution_cost
 
