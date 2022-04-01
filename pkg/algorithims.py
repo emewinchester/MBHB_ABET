@@ -119,6 +119,8 @@ def simulated_an(t0,L,tf,slots,evaluation):
 
             cost_difference = candidate_solution_cost - current_solution_cost
 
+            print(np.exp( (-cost_difference) / t ))
+
             if cost_difference < 0 or \
                 np.random.rand() < np.exp( (-cost_difference) / t ):
 
