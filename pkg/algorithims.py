@@ -9,6 +9,21 @@ from pkg.tabu_list import *
 
 
 def greedy(initial_state, evaluation):
+    """
+    Greedy Algorithm 
+
+    Parameters
+    ----------
+    initial_state: array of elements from which the greedy solution is calculated. 
+
+    evaluation: Evaluation object. Contains the data loaded and the evaluation function
+
+    Returns
+    -------
+    solution: array of elements that represents the capacity of the stations.
+
+    solution_cost: cost of the solution
+    """
 
     solution = \
         np.int64(np.round(initial_state / initial_state.sum() * MAX_CAPACITY))
@@ -20,15 +35,28 @@ def greedy(initial_state, evaluation):
 
 
 def random_search(evaluation):
+    """
+    Function that implements the Random Search Algorithm
+
+    Parameters
+    ---------
+    evaluation: Evaluation object. Contains the data loaded and the evaluation function.
+
+    Returns
+    -------
+    best_solution: array of elements that represents the capacity of the stations.
+
+    best_solution_cost: cost of best_solution.
+    """
 
     initial_solution = generate_random_solution()
     current_solution = initial_solution
-    best_solution = current_solution
+    best_solution    = current_solution
 
     best_solution_cost = evaluation.evaluate(best_solution)
 
     for i in range(RS_TOTAL_ITERATIONS - 1):
-        current_solution = generate_random_solution()
+        current_solution      = generate_random_solution()
         current_solution_cost = evaluation.evaluate(current_solution)
 
         if current_solution_cost < best_solution_cost:
@@ -42,6 +70,25 @@ def random_search(evaluation):
 
 
 def local_search(granularity, evaluation, path=None):
+    """
+    Implements the Local Search Algorithm
+
+
+    Parameters
+    ----------
+    granularity: Number of slots that can be moved between stations.
+
+    evaluation: Evaluation object. Contains the data loaded and the evaluation function.
+
+    path: Optional parameter. Name of the file in which the data is saved.
+
+
+    Returns
+    -------
+    current_solution: array of elements that represents the capacity of the stations.
+
+    current_solution_cost: cost of current_solution
+    """
 
     # estructura de datos para volcar a csv
     costs = np.array([])
@@ -50,8 +97,6 @@ def local_search(granularity, evaluation, path=None):
     current_solution_cost = evaluation.evaluate(current_solution)
 
     evaluations = 0
-
-
 
 
     while True and evaluations < LS_EVALLUATION_CALLS:
@@ -98,6 +143,29 @@ def local_search(granularity, evaluation, path=None):
 
 
 def simulated_an(t0,L,tf,slots,evaluation):
+    """
+    Implementation of the Simulated Annealing Algorithm
+
+
+    Parameters
+    ----------
+    t0: Initial temperature.
+
+    L: Number of neighbors to generate
+
+    tf: Final temperature.
+
+    slots: granularity.
+
+    evaluation: Evaluation object. Contains the data loaded and the evaluation function.
+
+
+    Returns
+    -------
+    global_solution: array of elements that represents the capacity of the stations.
+
+    global_solution_cost: cost of global_solution
+    """
 
     t = t0
 
@@ -112,6 +180,7 @@ def simulated_an(t0,L,tf,slots,evaluation):
         slots            = slots
     )
 
+    # number of iterations
     k = 0
 
     while t >= tf:
@@ -145,6 +214,20 @@ def simulated_an(t0,L,tf,slots,evaluation):
 
 
 def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evaluation):
+    """
+    Implementation of Tabu Search Algorithm
+
+    Parameters
+    ----------
+    tenure: Tabu List length.
+
+    reboots: Times the algorithm is reseted.
+
+    total_iterations: 
+    slots:
+    total_neighbors:
+    evaluation: Evaluation object. Contains the data loaded and the evaluation function.
+    """
     
     current_solution      = generate_random_solution()
     current_solution_cost = evaluation.evaluate(current_solution)
@@ -212,7 +295,7 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
                 tl.add_movement(candidates_clean[0][1])
 
 
-            # actualizamos matriz de frecuencias
+            
             frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
         
