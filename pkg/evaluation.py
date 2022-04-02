@@ -87,6 +87,9 @@ class Evaluation():
 
 
     def _get_timestamp_distance(self, bikes, capacity, current_time, index_matrix,count_km):
+        """
+        
+        """
 
         jump_matrix = None
 
@@ -130,18 +133,29 @@ class Evaluation():
 
     def evaluate(self, solution):
         """
-        DESCRIPTION DEL METODO
+        Calculates the cost of a given capacity vector (solution).
+
+        Parameters
+        ----------
+        solution: Array of elements that represents the capacity of the stations.
+
+
+        Returns
+        -------
+        total_distance: Cost of solution. Given in kilometers.
         """
 
         self.total_calls += 1
 
         total_distance = 0
-        bikes = self.extended_deltas[0,:].copy()
-        count_km = False
+        count_km       = False # First movement doesn't count km
 
+        bikes = self.extended_deltas[0,:].copy()
+        
+        
         for row in range(self.movements.shape[0]):
 
-            # flujo en una franja de tiempo de 5 min 
+            # Movements that occur along 5 minutes
             current_time = self.movements[row,:] 
 
             total_distance += self._get_timestamp_distance(
@@ -152,7 +166,7 @@ class Evaluation():
                 count_km     = count_km
             )
 
-            # First movement doesn't count km
+            # First movement doesn't count km, every other movement does
             count_km = True
 
         return total_distance
