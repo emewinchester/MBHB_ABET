@@ -104,6 +104,9 @@ def simulated_an(t0,L,tf,slots,evaluation):
     current_solution      = generate_random_solution()
     current_solution_cost = evaluation.evaluate(current_solution)
 
+    global_solution      = current_solution
+    global_solution_cost = current_solution_cost
+
     neighbors = Neighborhood(
         current_solution = current_solution,
         slots            = slots
@@ -119,13 +122,15 @@ def simulated_an(t0,L,tf,slots,evaluation):
 
             cost_difference = candidate_solution_cost - current_solution_cost
 
-            print(np.exp( (-cost_difference) / t ))
-
             if cost_difference < 0 or \
                 np.random.rand() < np.exp( (-cost_difference) / t ):
 
                 current_solution      = candidate_solution
                 current_solution_cost = candidate_solution_cost 
+
+                if current_solution_cost < global_solution_cost:
+                    global_solution      = current_solution
+                    global_solution_cost = current_solution_cost
 
                 neighbors = Neighborhood(
                     current_solution = current_solution,
@@ -135,7 +140,7 @@ def simulated_an(t0,L,tf,slots,evaluation):
         t = t0 / (1 + k)
         k += 1
 
-    return current_solution, current_solution_cost
+    return global_solution, global_solution_cost
 
 
 
