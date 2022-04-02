@@ -1,12 +1,11 @@
-from shutil import move
 import numpy as np
 
 class TabuList():
 
     def __init__(self, tenure):
-        self.tenure = tenure
+        self.tenure    = tenure
         self.tabu_list = []
-        self.cont = 0
+        self.cont      = 0
     
 
     def add_movement(self, movement):

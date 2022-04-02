@@ -237,7 +237,7 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
 
 
     # Matriz de frecuencias: inicializacion y actualizacion
-    base_values = np.array(range(1,30,3))
+    base_values = np.array(range(0,39,5))
     frequency = np.ones( (len( base_values ), TOTAL_STATIONS) )
     frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
@@ -248,10 +248,13 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
 
     for reboot in range(reboots):
 
-        for iteration in range(int(total_iterations/reboots)):
+        for i in range(int(total_iterations/reboots)):
+
+            print(f'reboot {reboot}, iteracion {i}')
 
             # genero vecinos -> 40 vecinos
 
+            # (solucion, (destino, valor(destino)) )
             neighbors = Neighborhood(current_solution, slots)
             candidates = \
                 [ neighbors.get_neighbor_ts() for n in range(total_neighbors) ]
@@ -269,6 +272,10 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
             # se cumple criterio de aspiracion -> mejorar la global siendo tabu
             if candidates_cost[0][2] < global_solution_cost:
 
+                print('ASPIRA')
+                print(f'coste candidata {candidates_cost[0][2]}')
+                print(f'coste global {global_solution_cost}')
+
                 # aceptamos solucion
                 current_solution      = candidates_cost[0][0]
                 current_solution_cost = candidates_cost[0][2]
@@ -280,12 +287,15 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
                 # actualizamos tabu
                 tl.add_movement(candidates_cost[0][1])
 
+                
             else:
+
+                print('No aspira')
 
                 # eliminamos los movimientos tabu-activos
                 candidates_clean = [c for c in candidates_cost if not c[3]]
 
-                # print(f'veces tabu: {np.array(list(map(lambda x:x[3], candidates_cost))).sum()}')
+                print(f'veces tabu: {np.array(list(map(lambda x:x[3], candidates_cost))).sum()}')
 
                 # aceptamos solucion
                 current_solution      = candidates_clean[0][0]
@@ -294,7 +304,9 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
                 # actualizamos tabu
                 tl.add_movement(candidates_clean[0][1])
 
-
+               
+            
+            
             
             frequency = update_frequency_matrix(frequency,current_solution, base_values)
 
@@ -303,14 +315,17 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
         n = np.random.rand()
 
         if   n < RANDOM_SOL_PROB:
+            print('genera solucion aleatoria')
             current_solution      = generate_random_solution()
             current_solution_cost = evaluation.evaluate(current_solution)
         elif n < GREEDY_SOL_PROB:
             current_solution      = generate_greedy_solution(frequency, base_values)
-            current_solution_cost = evaluation.evaluate(current_solution)        
+            current_solution_cost = evaluation.evaluate(current_solution)   
+            print(f'genera solucion por matriz frecuencias, total bicis{current_solution.sum()}')     
         else:
             current_solution      = global_solution
             current_solution_cost = global_solution_cost
+            print('reboot a partir de la global')
 
 
         # actualizamos matriz de frecuencias
