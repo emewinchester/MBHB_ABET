@@ -1,4 +1,3 @@
-from operator import index
 import numpy as np
 from pkg.constants import *
 
@@ -96,6 +95,43 @@ def generate_greedy_solution(matrix, base_values):
             solution[greater_station] -= total_slots - MAX_CAPACITY
 
     return solution
+
+
+
+def neighbor_generation_operator(solution, k):
+
+    neighbor = solution.copy()
+    
+    # select index from which we start selecting items
+    index = np.random.randint(TOTAL_STATIONS)
+    print(f'indice: {index}')
+
+    # size of the sublist
+    s = sizes_of_sublists[k-1]
+    print(f'tamaño sublista: {s}')
+
+    if s == TOTAL_STATIONS:
+        np.random.shuffle(neighbor)
+    else:
+        sublist = np.zeros(s)
+
+        # items selection
+        index_aux = index
+        for i in range(s):
+            sublist[i] = solution[index_aux % TOTAL_STATIONS]
+            index_aux += 1
+        
+        print(sublist)
+        np.random.shuffle(sublist)
+        print(sublist)
+
+        # modify neighbor
+        index_aux = index
+        for i in range(s):
+            neighbor[index_aux % TOTAL_STATIONS] = sublist[i]
+            index_aux += 1
+    
+    return neighbor
 
 
 
