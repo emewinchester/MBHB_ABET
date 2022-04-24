@@ -213,7 +213,7 @@ def simulated_an(t0,L,tf,slots,evaluation):
 
 
 
-def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evaluation):
+def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evaluation, path=None):
     """
     Implementation of Tabu Search Algorithm
 
@@ -229,11 +229,16 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
     evaluation: Evaluation object. Contains the data loaded and the evaluation function.
     """
     
+    # data structure for the study of optimal number of iterations
+    
+
     current_solution      = generate_random_solution()
     current_solution_cost = evaluation.evaluate(current_solution)
 
     global_solution      = current_solution
     global_solution_cost = current_solution_cost
+    costs = np.array([global_solution_cost])
+    iterations = np.array([0])
 
 
     # Matriz de frecuencias: inicializacion y actualizacion
@@ -244,17 +249,19 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
     # tabu list
     tl = TabuList(tenure)
 
-
+    iteracion = 0
 
     for reboot in range(reboots):
 
         for i in range(int(total_iterations/reboots)):
 
-            print(f'reboot {reboot}, iteracion {i}')
+            #print(f'reboot {reboot}, iteracion {i}')
+
+            iteracion +=1
 
             # genero vecinos -> 40 vecinos
 
-            # (solucion, (destino, valor(destino)) )
+            # (solucion, (origen, lo_que_tenia_origen_antes_del_cambio )
             neighbors = Neighborhood(current_solution, slots)
             candidates = \
                 [ neighbors.get_neighbor_ts() for n in range(total_neighbors) ]
@@ -265,16 +272,18 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
                 for c in candidates 
             ]
 
+            
             candidates_cost.sort(key= lambda x:x[2])
+            # print(candidates_cost)
 
             
 
             # se cumple criterio de aspiracion -> mejorar la global siendo tabu
             if candidates_cost[0][2] < global_solution_cost:
 
-                print('ASPIRA')
-                print(f'coste candidata {candidates_cost[0][2]}')
-                print(f'coste global {global_solution_cost}')
+                #print('ASPIRA')
+                #print(f'coste candidata {candidates_cost[0][2]}')
+                # print(f'coste global {global_solution_cost}')
 
                 # aceptamos solucion
                 current_solution      = candidates_cost[0][0]
@@ -284,28 +293,40 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
                 global_solution      = current_solution
                 global_solution_cost = current_solution_cost
 
+                # almacenamos los datos
+                costs = np.append(costs, global_solution_cost)
+                iterations = np.append(iterations, iteracion)
+
                 # actualizamos tabu
                 tl.add_movement(candidates_cost[0][1])
 
                 
             else:
 
-                print('No aspira')
+                # print('No aspira')
 
                 # eliminamos los movimientos tabu-activos
                 candidates_clean = [c for c in candidates_cost if not c[3]]
 
-                print(f'veces tabu: {np.array(list(map(lambda x:x[3], candidates_cost))).sum()}')
+                # print(f'veces tabu: {np.array(list(map(lambda x:x[3], candidates_cost))).sum()}')
 
-                # aceptamos solucion
-                current_solution      = candidates_clean[0][0]
-                current_solution_cost = candidates_clean[0][2]
+                # segundo criterio de aspiracion: si la lista tabu elimina a todos los vecinos, 
+                # candidatos, aceptamos al que mejor coste tenga
+                if np.array(list(map(lambda x:x[3], candidates_cost))).sum() >= total_neighbors:
+                    # aceptamos solucion
+                    current_solution      = candidates_cost[0][0]
+                    current_solution_cost = candidates_cost[0][2]
 
-                # actualizamos tabu
-                tl.add_movement(candidates_clean[0][1])
+                    # actualizamos tabu
+                    tl.add_movement(candidates_cost[0][1])
+                else:
+                    # aceptamos solucion
+                    current_solution      = candidates_clean[0][0]
+                    current_solution_cost = candidates_clean[0][2]
 
-               
-            
+                    # actualizamos tabu
+                    tl.add_movement(candidates_clean[0][1])
+
             
             
             frequency = update_frequency_matrix(frequency,current_solution, base_values)
@@ -315,17 +336,17 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
         n = np.random.rand()
 
         if   n < RANDOM_SOL_PROB:
-            print('genera solucion aleatoria')
+            # print('genera solucion aleatoria')
             current_solution      = generate_random_solution()
             current_solution_cost = evaluation.evaluate(current_solution)
         elif n < GREEDY_SOL_PROB:
             current_solution      = generate_greedy_solution(frequency, base_values)
             current_solution_cost = evaluation.evaluate(current_solution)   
-            print(f'genera solucion por matriz frecuencias, total bicis{current_solution.sum()}')     
+            # print(f'genera solucion por matriz frecuencias, total bicis{current_solution.sum()}')     
         else:
             current_solution      = global_solution
             current_solution_cost = global_solution_cost
-            print('reboot a partir de la global')
+            # print('reboot a partir de la global')
 
 
         # actualizamos matriz de frecuencias
@@ -343,6 +364,14 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
             tl = TabuList(2)
         else:
             tl = TabuList(tenure)
+
+    if path is not None:
+        df = pd.DataFrame({
+            'Iteracion' : iterations,
+            'Coste'     : costs
+        })
+
+        df.to_excel(path)
 
 
     return global_solution, global_solution_cost

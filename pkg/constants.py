@@ -45,6 +45,11 @@ PERMUTATIONS = list(permutations(range(TOTAL_STATIONS), 2))
 MINIMUM_LENGTH_TABU_LIST = 2
 
 
+# PARAMETERS FOR VNS
+k_max = 4
+s = [4, 8, 12, 16]
+
+
 
 
 

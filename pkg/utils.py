@@ -1,8 +1,7 @@
 from operator import index
 import numpy as np
-import pandas as pd
 from pkg.constants import *
-import time
+
 
 
 
@@ -81,9 +80,14 @@ def generate_greedy_solution(matrix, base_values):
                 break
 
 
+    total_slots = np.sum(solution)
+    print(f'slots asignados: {total_slots}')
+
     # normalizamos solucion SI NOS QUEDAMOS POR DEBAJO DEL MINIMO
-    if slots_repartidos < MIN_CAPACITY:
-        total_slots = np.sum(solution)
+    if total_slots < MIN_CAPACITY or total_slots > MAX_CAPACITY:
+
+        print('normaliza')
+        
         solution = np.int64(np.round(solution * MAX_CAPACITY / total_slots))
         total_slots = np.sum(solution)
 

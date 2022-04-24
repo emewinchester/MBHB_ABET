@@ -61,7 +61,7 @@ class Neighborhood():
 
             n = self._adjust_neighbor(neighbor, o,d)
 
-            return n, (d,n[d])
+            return n, (o, self.solution[o])
 
         else:
             return None
