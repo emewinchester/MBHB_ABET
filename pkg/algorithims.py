@@ -69,7 +69,7 @@ def random_search(evaluation):
 
 
 
-def local_search(granularity, evaluation, path=None):
+def local_search(granularity, evaluation, initial_sol = None, path=None):
     """
     Implements the Local Search Algorithm
 
@@ -79,6 +79,8 @@ def local_search(granularity, evaluation, path=None):
     granularity: Number of slots that can be moved between stations.
 
     evaluation: Evaluation object. Contains the data loaded and the evaluation function.
+
+    solution: Initial solution
 
     path: Optional parameter. Name of the file in which the data is saved.
 
@@ -93,7 +95,12 @@ def local_search(granularity, evaluation, path=None):
     # estructura de datos para volcar a csv
     costs = np.array([])
 
-    current_solution = generate_random_solution()
+    if initial_sol is None:
+        current_solution = generate_random_solution()
+    else:
+        current_solution = initial_sol
+
+
     current_solution_cost = evaluation.evaluate(current_solution)
 
     evaluations = 0
