@@ -104,11 +104,11 @@ def neighbor_generation_operator(solution, k):
     
     # select index from which we start selecting items
     index = np.random.randint(TOTAL_STATIONS)
-    print(f'indice: {index}')
+    # print(f'indice: {index}')
 
     # size of the sublist
     s = sizes_of_sublists[k-1]
-    print(f'tamaño sublista: {s}')
+    # print(f'tamaño sublista: {s}')
 
     if s == TOTAL_STATIONS:
         np.random.shuffle(neighbor)
@@ -121,9 +121,9 @@ def neighbor_generation_operator(solution, k):
             sublist[i] = solution[index_aux % TOTAL_STATIONS]
             index_aux += 1
         
-        print(sublist)
+        # print(sublist)
         np.random.shuffle(sublist)
-        print(sublist)
+        # print(sublist)
 
         # modify neighbor
         index_aux = index
