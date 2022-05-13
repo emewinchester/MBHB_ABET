@@ -171,4 +171,15 @@ class Evaluation():
 
         return total_distance
 
+    
+    def fitness(self, solution, penalization = None):
+
+        if penalization is None:
+            penalization = 0
+
+        total_distance = self.evaluate(solution)
+        value = total_distance + penalization * solution.sum()
+
+        return value, total_distance
+
 
