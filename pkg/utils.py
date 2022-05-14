@@ -98,7 +98,7 @@ def generate_greedy_solution(matrix, base_values):
 
 
 
-def neighbor_generation_operator(solution, k, granularity):
+def neighbor_generation_operator(solution, k, sizes_Ek, granularity):
 
     neighbor = solution.copy()
     
@@ -107,7 +107,7 @@ def neighbor_generation_operator(solution, k, granularity):
     # print(f'indice: {index}')
 
     # size of the sublist
-    s = sizes_of_sublists[k-1]
+    s = sizes_Ek[k-1]
     # print(f'tamaño sublista: {s}')
 
     

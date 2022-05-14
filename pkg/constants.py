@@ -46,8 +46,7 @@ MINIMUM_LENGTH_TABU_LIST = 2
 
 
 # PARAMETERS FOR VNS
-k_max = 4
-sizes_of_sublists = [4, 8, 12, 16]
+
 
 
 
