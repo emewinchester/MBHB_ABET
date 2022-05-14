@@ -153,3 +153,26 @@ def neighbor_generation_operator(solution, k, sizes_Ek, granularity):
 
 
 
+def inicializa_poblacion(tam, conocidos=None):
+
+    if conocidos is None:
+        cromosoma = generate_random_solution()
+        poblacion = np.array([cromosoma])
+    else:
+        poblacion = conocidos
+
+    for i in range(tam- poblacion.shape[0]):
+        cromosoma = generate_random_solution()
+        poblacion = np.append(poblacion,[cromosoma],0)  
+    
+    return poblacion
+
+
+def evalua_poblacion(poblacion, evaluation):
+    fitness_poblacion = np.empty(poblacion.shape[0])
+
+    for individuo in range(poblacion.shape[0]):
+        fitness, distancia = evaluation.fitness(poblacion[individuo,:])
+        fitness_poblacion[individuo] = fitness
+    
+    return fitness_poblacion
