@@ -98,7 +98,7 @@ def generate_greedy_solution(matrix, base_values):
 
 
 
-def neighbor_generation_operator(solution, k):
+def neighbor_generation_operator(solution, k, granularity):
 
     neighbor = solution.copy()
     
@@ -110,26 +110,44 @@ def neighbor_generation_operator(solution, k):
     s = sizes_of_sublists[k-1]
     # print(f'tamaño sublista: {s}')
 
-    if s == TOTAL_STATIONS:
-        np.random.shuffle(neighbor)
-    else:
-        sublist = np.zeros(s)
+    
+    
+    sublist = np.zeros(s)
 
-        # items selection
-        index_aux = index
-        for i in range(s):
-            sublist[i] = solution[index_aux % TOTAL_STATIONS]
-            index_aux += 1
+    # items selection
+    index_aux = index
+    for i in range(s):
+        sublist[i] = solution[index_aux % TOTAL_STATIONS]
+        index_aux += 1
         
-        # print(sublist)
-        np.random.shuffle(sublist)
-        # print(sublist)
+    # print(sublist)
+    # np.random.shuffle(sublist)
+    # print(sublist)
 
-        # modify neighbor
-        index_aux = index
-        for i in range(s):
-            neighbor[index_aux % TOTAL_STATIONS] = sublist[i]
-            index_aux += 1
+    for i in range(s):
+
+        origin  = i
+        destiny = i+1
+
+        # solo en indices pares
+        if origin%2 == 0:
+                
+            # movimiento (origen,destino)
+            # coge granularity de slots de origen y los añade a destino
+            if sublist[origin] < granularity:
+                sublist[destiny] += sublist[origin]
+                sublist[origin]  = 0
+            else:
+                sublist[destiny] += granularity
+                sublist[origin]  -= granularity
+        
+
+
+    # modify neighbor
+    index_aux = index
+    for i in range(s):
+        neighbor[index_aux % TOTAL_STATIONS] = sublist[i]
+        index_aux += 1
     
     return neighbor
 
