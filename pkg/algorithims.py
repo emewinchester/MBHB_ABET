@@ -385,3 +385,160 @@ def tabu_search(tenure, reboots, total_iterations, slots, total_neighbors, evalu
             
 
 
+
+
+def vns(solution, k_max, bl_max, sizes_Ek, granularity, ev):
+
+    """
+    Implementación del algoritmo VNS
+
+
+    Parametros
+    ----------
+    k_max: Numero máximo de entornos a explorar.
+
+    bl_max: Máximo número de BL a realizar. Criterio de parada
+
+    solution: Solución inicial
+
+    sizes_Ek: Tamaño de los entornos
+
+    ev: Objeto evaluación. Aplica la función coste sobre una solución.
+
+
+
+    Returns
+    -------
+    global_sol: Array de enteros que representa la capacidad de las estaciones.
+
+    global_sol_cost: COste de global_sol
+    """
+
+    # conteo de evaluaciones realizadas
+    ev.total_calls = 0
+
+    
+    global_sol      = solution
+    global_sol_cost = ev.evaluate(global_sol)
+
+
+    k  = 1
+    bl = 0
+
+    while k <= k_max and bl <= bl_max :
+
+        neighbor = neighbor_generation_operator(
+            solution    = global_sol, 
+            k           = k,
+            sizes_Ek    = sizes_Ek,
+            granularity = granularity
+        )
+
+        candidate_sol, candidate_sol_cost = local_search(
+            granularity = granularity,
+            evaluation  = ev,
+            initial_sol = neighbor
+        )
+
+        bl += 1
+        print(bl)
+
+        if candidate_sol_cost < global_sol_cost:
+            print(f'mejora')
+            print(f'Coste antiguo: {global_sol_cost}')
+            print(f'Coste nuevo: {candidate_sol_cost}')
+            global_sol      = candidate_sol
+            global_sol_cost = candidate_sol_cost
+
+            k = 1
+        else:
+            print('no mejora')
+            k += 1
+
+    return global_sol, global_sol_cost
+
+
+
+def vns_upgrade(solution, k_max, bl_max, attempts, sizes_Ek, granularity, ev):
+
+    """
+    Implementación del algoritmo VNS
+
+
+    Parametros
+    ----------
+    solution: Solución inicial
+
+    k_max: Numero máximo de entornos a explorar.
+
+    bl_max: Máximo número de BL a realizar. Criterio de parada
+
+    attempts: Numero máximo de intentos en el último entorno
+
+    sizes_Ek: Tamaño de los entornos
+
+    ev: Objeto evaluación. Aplica la función coste sobre una solución.
+
+
+
+
+    Returns
+    -------
+    global_sol: Array de enteros que representa la capacidad de las estaciones.
+
+    global_sol_cost: COste de global_sol
+    """
+
+    # conteo de evaluaciones realizadas
+    ev.total_calls = 0
+
+    
+    global_sol      = solution
+    global_sol_cost = ev.evaluate(global_sol)
+
+
+    k  = 1
+    bl = 0
+    a  = 0 # numero de intentos
+
+    while a < attempts and bl < bl_max :
+
+        
+        
+        neighbor = neighbor_generation_operator(
+            solution    = global_sol, 
+            k           = k,
+            sizes_Ek    = sizes_Ek,
+            granularity = granularity
+        )
+
+        candidate_sol, candidate_sol_cost = local_search(
+            granularity = granularity,
+            evaluation  = ev,
+            initial_sol = neighbor
+        )
+
+        bl += 1
+        print(bl)
+
+        if candidate_sol_cost < global_sol_cost:
+            print(f'mejora')
+            print(f'Coste antiguo: {global_sol_cost}')
+            print(f'Coste nuevo: {candidate_sol_cost}')
+            global_sol      = candidate_sol
+            global_sol_cost = candidate_sol_cost
+
+            k = 1
+            a = 0
+            
+        else:
+            print('no mejora')
+            
+
+            if k < k_max:
+                k += 1
+            else:
+                a += 1
+            
+
+    return global_sol, global_sol_cost
