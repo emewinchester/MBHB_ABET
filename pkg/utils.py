@@ -320,3 +320,39 @@ def mutacion(f_poblacion, hijos, f_hijos, granularidad):
                 hijos[hijo,:] = muta_cromosoma(hijos[hijo,:],granularidad)
     
     return hijos
+
+
+
+def reemplazo(k, poblacion, f_poblacion, hijos, f_hijos):
+
+    
+    participantes = int((poblacion.shape[0]*k))
+
+    if participantes < 3:
+        participantes = 3
+
+    indices = list(range(poblacion.shape[0]))
+    np.random.shuffle(indices)
+
+
+    i_participantes = indices[:participantes]
+    f_participantes = f_poblacion[i_participantes]
+
+  
+
+    # sustituimos el peor de los participantes
+    peor_participantes = np.argmax(f_participantes)
+    i_peor_poblacion = i_participantes[peor_participantes]
+
+    # por el mejor de los hijos
+    i_mejor_hijo = np.argmin(f_hijos)
+
+    mejor_hijo         = hijos[i_mejor_hijo]
+    mejor_hijo_fitness = f_hijos[i_mejor_hijo]
+    
+
+    
+    f_poblacion[i_peor_poblacion] = mejor_hijo_fitness
+    poblacion[i_peor_poblacion,:] = mejor_hijo.copy()
+
+    return poblacion, f_poblacion
