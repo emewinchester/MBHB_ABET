@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import cross_decomposition
 from pkg.constants import *
 
 
@@ -168,11 +169,154 @@ def inicializa_poblacion(tam, conocidos=None):
     return poblacion
 
 
-def evalua_poblacion(poblacion, evaluation):
+
+def evalua_poblacion(poblacion, evaluation, alpha = None):
     fitness_poblacion = np.empty(poblacion.shape[0])
+    km_poblacion      = np.empty(poblacion.shape[0])
+    slots_poblacion   = np.empty(poblacion.shape[0])
 
     for individuo in range(poblacion.shape[0]):
-        fitness, distancia = evaluation.fitness(poblacion[individuo,:])
+        if alpha is None:
+            fitness, km, slots = evaluation.fitness(poblacion[individuo,:])
+        else:
+            fitness, km, slots = evaluation.fitness(poblacion[individuo,:], alpha)
+        
         fitness_poblacion[individuo] = fitness
+        km_poblacion[individuo]      = km
+        slots_poblacion[individuo]   = slots
     
-    return fitness_poblacion
+    return fitness_poblacion, km_poblacion, slots_poblacion
+
+
+
+def operador_cruce(padres, ev, alpha):
+
+    padre1 = padres[0,:].copy()
+    padre2 = padres[1,:].copy()
+
+    candidatos = np.empty((6, TOTAL_STATIONS))
+    candidato  = np.zeros(TOTAL_STATIONS)
+    
+    for c in range(len(candidatos)):
+
+        # nos aseguramos de tener hijos validos (más de 205 slots)
+        while candidato.sum() < 205 :
+            
+            for i in range(TOTAL_STATIONS):
+
+                if np.random.rand() < 0.5:
+                    candidato[i] = padre1[i]
+                else:
+                    candidato[i] = padre2[i]
+
+        candidatos[c,:] = candidato.copy()
+
+        candidato = np.zeros(TOTAL_STATIONS)
+        
+
+    # Nos quedamos con los hijos con mejores fitness
+    fitness, km, slots = evalua_poblacion(candidatos, ev, alpha)
+
+    # nos quedamos solo con 2 hijos
+    hijos         = np.empty((2,TOTAL_STATIONS))
+    fitness_hijos = np.empty(2)
+    km_hijos      = np.empty(2)
+
+    for i in range(2):
+
+        mejor = np.argmin(fitness)
+
+        hijos[i,:]       = candidatos[mejor,:].copy()
+        fitness_hijos[i] = fitness[mejor]
+        km_hijos[i]      = km[mejor]
+
+        # eliminamos ese candidato y su fitness
+        fitness    = np.delete(fitness,mejor)
+        candidatos = np.delete(candidatos, mejor, axis=0)
+        km         = np.delete(km, mejor)
+
+    
+    return hijos, fitness_hijos, km_hijos
+
+
+
+
+def seleccion_padres(poblacion):
+
+    tam_poblacion = poblacion.shape[0]
+
+    i_padre1 = np.random.randint(0,tam_poblacion)
+    i_padre2 = np.random.randint(0,tam_poblacion)
+
+    # Técnica de diversidad en el cruce: 
+    # un padre no puede cruzarse consigo mismo
+    while(i_padre1 == i_padre2):
+        i_padre2 = np.random.randint(0,tam_poblacion)
+
+
+    padre1 = poblacion[i_padre1,:].copy()
+    padre2 = poblacion[i_padre2,:].copy()
+
+    padres = np.array([padre1,padre2])
+
+    return padres
+
+
+def operador_movimiento(cromosoma, origin, destiny, granularidad):
+
+    # movimiento (origen,destino)
+    # coge slots de origen y los añade a destino
+
+
+    cromosoma = cromosoma.copy()
+
+    if cromosoma[origin] < granularidad:
+        cromosoma[destiny] += cromosoma[origin]
+        cromosoma[origin]  = 0
+    else:
+        cromosoma[destiny] += granularidad
+        cromosoma[origin]  -= granularidad
+
+    return cromosoma
+
+
+def muta_cromosoma(cromosoma, granularidad):
+
+    origen = np.random.randint(0,TOTAL_STATIONS)
+    destino = np.random.randint(0,TOTAL_STATIONS)
+
+    while origen == destino:
+        destino = np.random.randint(0,TOTAL_STATIONS)
+
+    mutado = operador_movimiento(cromosoma, origen, destino, granularidad)
+
+    return mutado
+
+
+def mutacion(f_poblacion, hijos, f_hijos, granularidad):
+
+    f_pob = f_poblacion.copy()
+    f_pob_sorted = np.sort(f_pob) # ordenado ascendentemente
+
+    # decidimos cuantos genes mutar por cada hijo
+    for hijo in range(len(hijos)):
+
+
+        if np.random.rand() > 0.05:
+
+            if f_hijos[hijo] > f_pob_sorted[10]:
+
+                # mutamos 3 genes
+                for i in range(3):
+                    hijos[hijo,:] = muta_cromosoma(hijos[hijo,:],granularidad)
+
+            elif f_hijos[hijo] > f_pob_sorted[10]:
+
+                # mutamos 2 genes
+                for i in range(1):
+                    hijos[hijo,:] = muta_cromosoma(hijos[hijo,:],granularidad)
+            else:
+                # mutamos 1 gen
+                hijos[hijo,:] = muta_cromosoma(hijos[hijo,:],granularidad)
+    
+    return hijos

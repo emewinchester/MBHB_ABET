@@ -45,8 +45,9 @@ PERMUTATIONS = list(permutations(range(TOTAL_STATIONS), 2))
 MINIMUM_LENGTH_TABU_LIST = 2
 
 
-# PARAMETERS FOR VNS
-
+# PARAMETERS FOR AGB
+# MAX_EVAL = 35000 # para experimentacion final
+MAX_EVAL = 20000 # para ajuste de parametros
 
 
 
