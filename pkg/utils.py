@@ -356,3 +356,16 @@ def reemplazo(k, poblacion, f_poblacion, hijos, f_hijos):
     poblacion[i_peor_poblacion,:] = mejor_hijo.copy()
 
     return poblacion, f_poblacion
+
+
+
+def distancia_hamming(padre1,padre2):
+
+    distancia = 0
+
+    for i in range(TOTAL_STATIONS):
+
+        if padre1[i] != padre2[i]:
+            distancia +=1 
+            
+    return distancia
