@@ -1,5 +1,6 @@
-import numpy as np
-import pandas as pd
+import numpy             as np
+import pandas            as pd
+import matplotlib.pyplot as plt
 
 from pkg.neighborhood import Neighborhood
 from pkg.constants import *
@@ -542,3 +543,90 @@ def vns_upgrade(solution, k_max, bl_max, attempts, sizes_Ek, granularity, ev):
             
 
     return global_sol, global_sol_cost
+
+
+
+def agb_estacionario(poblacion, alpha, evaluation, grafica):
+
+    evaluation.total_calls = 0
+
+    t = 0
+
+    # estadisticos 
+    media_fitness    = []
+    var_fitness      = []
+    mejor_fitness    = []
+
+
+    fitness_poblacion, km_poblacion, slots_poblacion = evalua_poblacion(
+        poblacion = poblacion,
+        alpha = alpha,
+        evaluation= evaluation)
+
+    varianza = np.var(fitness_poblacion)
+    
+    # actualizacion estadisticos
+    media_fitness = np.append(media_fitness, np.mean(fitness_poblacion))
+    var_fitness   = np.append(var_fitness, np.var(fitness_poblacion))
+    mejor_fitness = np.append(mejor_fitness, np.min(fitness_poblacion))
+
+
+
+    while evaluation.total_calls < 10000:
+        t += 1
+        
+        padres = seleccion_padres(poblacion)
+        hijos, fitness_hijos, km_hijos = operador_cruce(padres, evaluation, alpha)
+
+        hijos = mutacion(\
+            fitness_poblacion, hijos, fitness_hijos, granularidad=2)
+        
+        fitness_hijos, km_h, s_h = evalua_poblacion(hijos, evaluation, alpha)
+        
+
+        poblacion, fitness_poblacion = reemplazo(0.2, poblacion,fitness_poblacion, hijos, fitness_hijos)
+
+        varianza = np.var(fitness_poblacion)
+        # print(f'varianza: {varianza}')
+
+        if varianza < 6:
+            break
+        
+
+        # actualizacion estadisticos
+        media_fitness = np.append(media_fitness, np.mean(fitness_poblacion))
+        var_fitness   = np.append(var_fitness, np.var(fitness_poblacion))
+        mejor_fitness = np.append(mejor_fitness, np.min(fitness_poblacion))
+
+        # print(np.min(fitness_poblacion))
+
+        # print(ev.total_calls)
+        
+     
+    
+    if grafica is True:
+        # REPRESENTACION GRAFICA DE LOS RESULTADOS
+        x = list(range(len(media_fitness)))
+        
+        fig, (media_f, var, mejor) = plt.subplots(3, 1)
+        fig.align_ylabels
+
+        media_f.plot(list(range(len(media_fitness))), media_fitness, color='C1')
+        media_f.set_ylabel('Mean fitness')
+
+        var.plot(list(range(len(var_fitness))),var_fitness, color='C2')
+        var.set_ylabel('Var fitness')
+
+        mejor.plot(list(range(len(mejor_fitness))),mejor_fitness, color='C0')
+        mejor.set_ylabel('Best fitness')
+        mejor.set_xlabel('Épocas')
+
+
+
+    
+    i_mejor_fitness = np.argmin(fitness_poblacion)
+
+    mejor_fitness = fitness_poblacion[i_mejor_fitness]
+    mejor_cromosoma = poblacion[i_mejor_fitness,:].copy()
+
+    return mejor_cromosoma, mejor_fitness
