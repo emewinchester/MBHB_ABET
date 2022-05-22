@@ -361,11 +361,16 @@ def reemplazo(k, poblacion, f_poblacion, hijos, f_hijos):
 
 def distancia_hamming(padre1,padre2):
 
-    distancia = 0
+    if len(padre1) == len(padre2):
+        
+        distancia = 0
 
-    for i in range(TOTAL_STATIONS):
+        for i in range(len(padre1)):
 
-        if padre1[i] != padre2[i]:
-            distancia +=1 
-            
-    return distancia
+            if padre1[i] != padre2[i]:
+                distancia +=1 
+        
+        return distancia
+    
+    else:
+        return -1
