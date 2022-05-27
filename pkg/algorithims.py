@@ -3,9 +3,9 @@ import pandas            as pd
 import matplotlib.pyplot as plt
 
 from pkg.neighborhood import Neighborhood
-from pkg.constants import *
-from pkg.utils import *
-from pkg.tabu_list import *
+from pkg.constants    import *
+from pkg.utils        import *
+from pkg.tabu_list    import *
 
 
 
@@ -630,3 +630,115 @@ def agb_estacionario(poblacion, alpha, evaluation, grafica):
     mejor_cromosoma = poblacion[i_mejor_fitness,:].copy()
 
     return mejor_cromosoma, mejor_fitness
+
+
+
+
+
+
+def chc(tama, alpha, rearranques, ev, grafica = False):
+
+    # estadisticos 
+    media_fitness    = []
+    var_fitness      = []
+    mejor_fitness    = []
+    
+    r = 0 # numero de rearranques realizados
+    t = 0 # generación
+    d = TOTAL_STATIONS/4 # umbral distancia de hamming
+
+    # Inicializamos poblacion con todos cromosomas generados aleatoriamente
+    P = inicializa_poblacion(tama)
+    
+
+    # Condicion de parada: numero de rearranques
+    while r < rearranques: 
+
+        print(f'rearranque: {r}')
+        print(f'iteracion: {t}')
+
+        t += 1
+
+        # select_r -> hacer un shuffle
+        np.random.shuffle(P)
+
+        fitness_p, km_p, slots_p = evalua_poblacion(P,ev,alpha)
+
+
+    
+        # actualizacion estadisticos
+        media_fitness = np.append(media_fitness, np.mean(fitness_p))
+        var_fitness   = np.append(var_fitness, np.var(fitness_p))
+        mejor_fitness = np.append(mejor_fitness, np.min(fitness_p))
+
+        df_padres = pd.DataFrame({
+            'indices_padres' : list(range(len(P))),
+            'fitness_padres' : fitness_p
+        })
+
+        # Ordenamos los padres (los de peor fitness arriba)
+        df_padres.sort_values(by='fitness_padres', ascending=False, inplace=True)
+
+
+
+        # recombine
+        hijos = recombinar(poblacion=P, umbral=d)
+
+        # evaluate
+        fitness_h, km_h, slots_h = evalua_poblacion(hijos,ev,alpha)
+
+
+        df_hijos = pd.DataFrame({
+            'indices_hijos' : list(range(len(hijos))),
+            'fitness_hijos' : fitness_h
+        })
+
+        # Ordenamos los hijos (los de mejor fitness arriba)
+        df_hijos.sort_values(by='fitness_hijos', ascending=True, inplace=True)
+
+
+        # select_s
+        P, df_poblacion, cambios = select_s(P, hijos, df_padres, df_hijos)
+
+        # compara poblaciones
+        if not cambios:
+            d -= 1
+
+        if d < 0:
+           
+            df_poblacion.sort_values(by='fitness_padres', ascending=True, inplace=True)
+           
+        
+            indice_mejor = df_poblacion.iloc[0,0]
+            mejor_p = P[indice_mejor,:].copy()
+            fitness_mejor = df_poblacion.iloc[0,1]
+
+            # introducimos 5 veces el mejor elemento
+            conocidos = np.array([mejor_p, mejor_p, mejor_p, mejor_p, mejor_p])
+
+            P = inicializa_poblacion(tama, conocidos)
+
+            r += 1
+            d = TOTAL_STATIONS/4 # umbral distancia de hamming
+    
+    
+
+    if grafica is True:
+        # REPRESENTACION GRAFICA DE LOS RESULTADOS
+        x = list(range(len(media_fitness)))
+        
+        fig, (media_f, var, mejor) = plt.subplots(3, 1)
+        fig.align_ylabels
+
+        media_f.plot(list(range(len(media_fitness))), media_fitness, color='C1')
+        media_f.set_ylabel('Mean fitness')
+
+        var.plot(list(range(len(var_fitness))),var_fitness, color='C2')
+        var.set_ylabel('Var fitness')
+
+        mejor.plot(list(range(len(mejor_fitness))),mejor_fitness, color='C0')
+        mejor.set_ylabel('Best fitness')
+        mejor.set_xlabel('Épocas')
+
+    return mejor_p, fitness_mejor
+

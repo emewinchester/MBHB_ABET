@@ -374,3 +374,126 @@ def distancia_hamming(padre1,padre2):
     
     else:
         return -1
+
+
+
+
+def cruce_parent_centered(padre1, padre2):
+
+    index_distintos = []
+
+    for i in range(len(padre2)):
+        # print(f'padre1, pos {i}: {padre1[i]}')
+        # print(f'padre2, pos {i}: {padre2[i]}\n')
+
+        if padre2[i] != padre1[i]: index_distintos.append(i)
+
+    # print(index_distintos)
+
+    # numero de cambios a realizar
+    cambios = int(np.floor(len(index_distintos)/2))
+
+    np.random.shuffle(index_distintos)
+
+    # generamos 2 hijos
+    hijo1 = np.copy(padre1)
+    hijo2 = np.copy(padre2)
+
+    for i in range(cambios):
+
+        pos1 = index_distintos[i]
+        pos2 = index_distintos[i+cambios]
+        # print(pos)
+
+        # mutamos hijos
+        hijo1[pos1] = np.round(np.random.normal(loc=padre2[pos1], scale=2))
+        hijo2[pos2] = np.round(np.random.normal(loc=padre1[pos2], scale=2))
+
+        # corregimos si tenemos valores negativos
+        if hijo1[pos1] < 0: hijo1[pos1] = 0
+        if hijo2[pos2] < 0: hijo2[pos2] = 0
+
+    # comprobamos que los hijos son soluciones validas (mayores de 205 bicis)
+    if hijo1.sum() < 205: 
+        # corregimos al hijo uniformemente
+        multiplicador = 205/hijo1.sum()
+        
+        # redondeamos por arriba para asegurarnos no bajar de 205
+        hijo1 = np.ceil(hijo1*multiplicador)
+
+
+    if hijo2.sum() < 205: 
+        multiplicador = 205/hijo2.sum()
+        hijo2 = np.ceil(hijo2*multiplicador)
+
+
+    return hijo1, hijo2
+
+
+
+
+def recombinar(poblacion, umbral):
+
+    hijos = None
+
+    for i in range(0,poblacion.shape[0],2):
+
+        padre1 = poblacion[i,:].copy()
+        padre2 = poblacion[i+1,:].copy()
+
+        
+
+        if distancia_hamming(padre1, padre2)/2 > umbral:
+            
+            # swap half the differing bits at random
+            hijo1, hijo2 = cruce_parent_centered(padre1, padre2) # crea hijo
+
+            if hijos is None:
+                hijos = np.array([hijo1, hijo2])
+            else:
+                hijos = np.append(hijos,[hijo1],0)  
+                hijos = np.append(hijos,[hijo2],0)  
+
+            
+    return hijos
+
+
+
+
+def select_s(P, hijos, df_padres, df_hijos):
+
+
+    P_nueva = P.copy()
+
+    df_P_nueva = df_padres.copy()
+
+    cambios = False
+
+    total_hijos = len(hijos)
+    
+    indice = 0
+
+    while(total_hijos > indice):
+
+        fp = df_padres.iloc[indice,1]
+        fh = df_hijos.iloc[indice,1]
+
+        if fp > fh:
+            
+            indice_padre = df_padres.iloc[indice,0]
+            indice_hijo  = df_hijos.iloc[indice,0]
+
+            P_nueva[indice_padre,:] = hijos[indice_hijo,:].copy()
+
+            df_P_nueva.iloc[indice,1] = df_hijos.iloc[indice,1]
+
+            cambios = True
+
+        else:
+            break
+    
+        indice += 1
+
+
+
+    return P_nueva, df_P_nueva, cambios
