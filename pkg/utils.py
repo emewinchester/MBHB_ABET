@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn import cross_decomposition
 from pkg.constants import *
 
@@ -497,3 +498,74 @@ def select_s(P, hijos, df_padres, df_hijos):
 
 
     return P_nueva, df_P_nueva, cambios
+
+
+
+def aclarado(poblacion, f_poblacion, radio_nicho, kappa):
+
+    df_poblacion = pd.DataFrame({
+            'indices' : list(range(len(poblacion))),
+            'fitness' : f_poblacion
+    })
+
+    # Ordenamos los padres (los de mejor fitness arriba)
+    df_poblacion.sort_values(by='fitness', ascending=True, inplace=True)
+
+    
+
+    for i in range(len(poblacion)):
+
+        
+
+        fitness_i = df_poblacion.iloc[i,1]
+        p_i = poblacion[df_poblacion.iloc[i,0],:]
+
+        if fitness_i > 0:
+
+                num_ganadores = 1
+                
+
+                for j in range(i+1,len(poblacion)):
+
+                    
+
+                    fitness_j = df_poblacion.iloc[i,1]
+                    p_j = poblacion[df_poblacion.iloc[j,0],:]
+                    
+                    if (fitness_j > 0) and \
+                        (distancia_hamming(p_i,p_j) < radio_nicho):
+
+                        
+
+                        if num_ganadores < kappa:
+                            
+                            num_ganadores += 1
+                        else:
+                          df_poblacion.iloc[i,1] = 0
+                          
+    
+    
+    
+    poblacion_nueva = None
+    
+
+    for i in range(len(df_poblacion)):
+
+        
+        cromosoma_i = poblacion[df_poblacion.iloc[i,0],:].copy()
+
+        if fitness_i > 0:
+
+            
+
+            if poblacion_nueva is None: 
+                poblacion_nueva = np.array([cromosoma_i])
+            else:
+                poblacion_nueva = np.append(poblacion_nueva,[cromosoma_i],0) 
+
+
+    
+    return poblacion_nueva
+
+     
+     

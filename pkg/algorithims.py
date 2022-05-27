@@ -745,3 +745,113 @@ def chc(tama, alpha, rearranques, ev, grafica = False):
 
     return mejor_p, fitness_mejor
 
+
+
+def multimodal(tama_poblacion, alpha, evaluation, saltos_aclarado, radio, kappa, grafica = False):
+
+    evaluation.total_calls = 0
+
+    poblacion = inicializa_poblacion(tama_poblacion)
+
+    t = 0
+
+    contador_aclarado = -1
+    aclaro = int(saltos_aclarado*len(poblacion)/2)
+
+    # estadisticos 
+    media_fitness    = []
+    var_fitness      = []
+    mejor_fitness    = []
+
+    tama_aclarados = []
+
+
+    fitness_poblacion, km_poblacion, slots_poblacion = evalua_poblacion(
+        poblacion = poblacion,
+        alpha = alpha,
+        evaluation= evaluation)
+
+    varianza = np.var(fitness_poblacion)
+    
+    # actualizacion estadisticos
+    media_fitness = np.append(media_fitness, np.mean(fitness_poblacion))
+    var_fitness   = np.append(var_fitness, np.var(fitness_poblacion))
+    mejor_fitness = np.append(mejor_fitness, np.min(fitness_poblacion))
+
+
+
+    while evaluation.total_calls < 18000:
+        t += 1
+        contador_aclarado += 1
+        
+        # AÑADIMOS EL CLEARING
+        # el clearing no se hace siempre
+        if contador_aclarado == aclaro:
+
+            contador_aclarado = 0
+            
+            poblacion = aclarado(poblacion, fitness_poblacion, radio, kappa)
+            tama_aclarados = np.append(tama_aclarados, len(poblacion))
+
+            fitness_poblacion, km_poblacion, slots_poblacion = evalua_poblacion(
+                    poblacion = poblacion,
+                    alpha = alpha,
+                    evaluation= evaluation)
+
+
+        padres = seleccion_padres(poblacion)
+
+       
+        hijos, fitness_hijos, km_hijos = operador_cruce(padres, evaluation, alpha)
+
+        hijos = mutacion(\
+            fitness_poblacion, hijos, fitness_hijos, granularidad=2)
+        
+        fitness_hijos, km_h, s_h = evalua_poblacion(hijos, evaluation, alpha)
+        
+
+        poblacion, fitness_poblacion = reemplazo(0.2, poblacion,fitness_poblacion, hijos, fitness_hijos)
+
+        varianza = np.var(fitness_poblacion)
+        # print(f'varianza: {varianza}')
+
+        if varianza < 6:
+            break
+        
+
+        # actualizacion estadisticos
+        media_fitness = np.append(media_fitness, np.mean(fitness_poblacion))
+        var_fitness   = np.append(var_fitness, np.var(fitness_poblacion))
+        mejor_fitness = np.append(mejor_fitness, np.min(fitness_poblacion))
+
+        # print(np.min(fitness_poblacion))
+
+        # print(ev.total_calls)
+        
+     
+    
+    if grafica is True:
+        # REPRESENTACION GRAFICA DE LOS RESULTADOS
+        x = list(range(len(media_fitness)))
+        
+        fig, (media_f, var, mejor) = plt.subplots(3, 1)
+        fig.align_ylabels
+
+        media_f.plot(list(range(len(media_fitness))), media_fitness, color='C1')
+        media_f.set_ylabel('Mean fitness')
+
+        var.plot(list(range(len(var_fitness))),var_fitness, color='C2')
+        var.set_ylabel('Var fitness')
+
+        mejor.plot(list(range(len(mejor_fitness))),mejor_fitness, color='C0')
+        mejor.set_ylabel('Best fitness')
+        mejor.set_xlabel('Épocas')
+
+    i_mejor_fitness = np.argmin(fitness_poblacion)
+
+    mejor_fitness = fitness_poblacion[i_mejor_fitness]
+    mejor_cromosoma = poblacion[i_mejor_fitness,:].copy()
+
+    media_aclarados = np.mean(tama_aclarados)
+
+    return mejor_cromosoma, mejor_fitness
