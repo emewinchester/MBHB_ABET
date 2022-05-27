@@ -654,8 +654,8 @@ def chc(tama, alpha, rearranques, ev, grafica = False):
     # Condicion de parada: numero de rearranques
     while r < rearranques: 
 
-        print(f'rearranque: {r}')
-        print(f'iteracion: {t}')
+        # print(f'rearranque: {r}')
+        # print(f'iteracion: {t}')
 
         t += 1
 
@@ -685,26 +685,29 @@ def chc(tama, alpha, rearranques, ev, grafica = False):
         hijos = recombinar(poblacion=P, umbral=d)
 
         # evaluate
-        fitness_h, km_h, slots_h = evalua_poblacion(hijos,ev,alpha)
+        if hijos is not None:
+            fitness_h, km_h, slots_h = evalua_poblacion(hijos,ev,alpha)
 
 
-        df_hijos = pd.DataFrame({
-            'indices_hijos' : list(range(len(hijos))),
-            'fitness_hijos' : fitness_h
-        })
+            df_hijos = pd.DataFrame({
+                'indices_hijos' : list(range(len(hijos))),
+                'fitness_hijos' : fitness_h
+            })
 
-        # Ordenamos los hijos (los de mejor fitness arriba)
-        df_hijos.sort_values(by='fitness_hijos', ascending=True, inplace=True)
+            # Ordenamos los hijos (los de mejor fitness arriba)
+            df_hijos.sort_values(by='fitness_hijos', ascending=True, inplace=True)
 
 
-        # select_s
-        P, df_poblacion, cambios = select_s(P, hijos, df_padres, df_hijos)
+            # select_s
+            P, df_poblacion, cambios = select_s(P, hijos, df_padres, df_hijos)
 
-        # compara poblaciones
-        if not cambios:
-            d -= 1
+            # compara poblaciones
+            if not cambios:
+                d -= 1
+        else:
+            df_poblacion = df_padres.copy()
 
-        if d < 0:
+        if d < 0 or hijos is None:
            
             df_poblacion.sort_values(by='fitness_padres', ascending=True, inplace=True)
            
